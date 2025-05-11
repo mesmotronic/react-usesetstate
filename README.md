@@ -1,91 +1,101 @@
-# React state management hooks
+# State hooks for React
 
-A pair of React hooks (`useSetState` and `useSetStateRef`) that mimic class component `setState` with immutable UI-driven updates and synchronous logic-driven state management.
+A collection of React hooks (`useSetState`, `useSetStateRef`, `useSetStateProxy`) that mimic class component `setState` for immutable UI-driven updates, synchronous logic-driven state, and proxy-based state access.
 
 ## Installation
-
-Install via npm:
 
 ```bash
 npm install @mesmotronic/react-usesetstate
 ```
 
-## Features
+## Examples
 
-- **`useSetState`**: Immutable state management with automatic re-rendering, ideal for UI components.
-- **`useSetStateRef`**: Synchronous state updates without re-rendering, perfect for logic or non-UI state.
-- TypeScript support with type-safe state updates.
-- Mimics React class component `setState` behaviour (merges partial updates, supports functional updates).
+### `useSetState`
 
-## Usage
-
-### 1. `useSetState`
-
-A hook for UI-driven state management with immutable updates and re-rendering.
+Immutable state with re-rendering for UI components.
 
 ```tsx
-import { useSetState } from "@mesmotronic/react-usesetstate";
+import { useSetState } from '@mesmotronic/react-usesetstate';
 
 interface FormState {
   name: string;
   age: number;
 }
 
-function FormComponent() {
-  const [state, setState] = useSetState<FormState>({ name: "", age: 0 });
+function Form() {
+  const [state, setState] = useSetState<FormState>({ name: '', age: 0 });
 
   return (
     <div>
-      <input value={state.name} onChange={(e) => setState({ name: e.target.value })} />
-      <button onClick={() => setState((prev) => ({ age: prev.age + 1 }))}>Increment Age</button>
-      <p>
-        Name: {state.name}, Age: {state.age}
-      </p>
+      <input
+        value={state.name}
+        onChange={(e) => setState({ name: e.target.value })}
+      />
+      <button onClick={() => setState((prev) => ({ age: prev.age + 1 }))}>
+        Increment Age
+      </button>
+      <p>Name: {state.name}, Age: {state.age}</p>
     </div>
   );
 }
 ```
 
-### 2. `useSetStateRef`
+### `useSetStateRef`
 
-A hook for synchronous state updates without re-rendering, ideal for logic or form validation.
+Synchronous state updates without re-rendering for logic.
 
 ```tsx
-import { useSetStateRef } from "@mesmotronic/react-usesetstate";
+import { useSetStateRef } from '@mesmotronic/react-usesetstate';
 
 interface FormState {
   name: string;
   age: number;
 }
 
-function LogicComponent() {
-  const [state, setState] = useSetStateRef<FormState>({ name: "", age: 0 });
+function Logic() {
+  const [state, setState] = useSetStateRef<FormState>({ name: '', age: 0 });
 
-  const handleUpdate = () => {
-    setState({ name: "Alice" });
+  const update = () => {
+    setState({ name: 'Alice' });
     console.log(state.name); // 'Alice' (instantly)
     state.age = 30; // Direct mutation
     console.log(state.age); // 30
   };
 
-  return <button onClick={handleUpdate}>Update State</button>;
+  return <button onClick={update}>Update</button>;
 }
 ```
 
-## API
+### `useSetStateProxy`
 
-- **`useSetState<T extends object>(initialState: T)`**:
-  - Returns: `[state: T, setState: (newState: Partial<T> | ((prev: T) => Partial<T>)) => void]`
-  - Updates state immutably, triggers re-renders.
-- **`useSetStateRef<T extends object>(initialState: T)`**:
-  - Returns: `[state: T, setState: (newState: Partial<T> | ((prev: T) => Partial<T>)) => void]`
-  - Updates state synchronously, no re-renders.
+Proxy-based state access, using `useSetState` or `useSetStateRef`.
 
-## Notes
+```tsx
+import { useSetStateProxy, useSetStateRef } from '@mesmotronic/react-usesetstate';
 
-- `useSetState` is best for UI components where state changes should update the DOM.
-- `useSetStateRef` is suited for logic-driven state (e.g., form data before submission) but requires manual re-rendering for UI updates.
-- Both hooks support TypeScript for type-safe state management.
+interface FormState {
+  name: string;
+  age: number;
+}
+
+function Form() {
+  const state = useSetStateProxy<FormState>({ name: '', age: 0 }); // Defaults to useSetState
+  const logicState = useSetStateProxy<FormState>({ name: '', age: 0 }, useSetStateRef);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    state.name = e.target.value; // Updates UI
+    logicState.name = e.target.value; // Updates synchronously
+    console.log('UI:', state.name, 'Logic:', logicState.name);
+  };
+
+  return (
+    <div>
+      <input type="text" value={state.name} onChange={handleChange} />
+      <p>Name: {state.name}</p>
+    </div>
+  );
+}
+```
 
 ## Licence
 
